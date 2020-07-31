@@ -27,20 +27,7 @@ public class SCMJobAnalyzer extends JobAnalyzer{
 		super.doJobAnalyze(null, mapJobsPerPlugin);
 		if(item instanceof AbstractProject){
 			PluginWrapper scmPlugin = getUsedPlugin(((AbstractProject)item).getScm().getDescriptor().clazz);
-			if(scmPlugin!=null)
-			{
-				JobsPerPlugin jobsPerPlugin = mapJobsPerPlugin.get(scmPlugin);
-				if(jobsPerPlugin!=null)
-				{
-					jobsPerPlugin.addProject(item);
-				}
-				else
-				{
-					JobsPerPlugin jobsPerPlugin2 = new JobsPerPlugin(scmPlugin);
-					jobsPerPlugin2.addProject(item);
-					mapJobsPerPlugin.put(scmPlugin, jobsPerPlugin2);
-				}
-			}
+			addItem(item, mapJobsPerPlugin, scmPlugin);
 		}
 	}
 

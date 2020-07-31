@@ -24,13 +24,14 @@ public abstract class JobAnalyzer{
 		{
 			if(plugin!=null)
 			{
-				JobsPerPlugin jobsPerPlugin = mapJobsPerPlugin.get(plugin);
-				if(jobsPerPlugin==null)
-				{
-					JobsPerPlugin jobsPerPlugin2 = new JobsPerPlugin(plugin);
-		    		mapJobsPerPlugin.put(plugin, jobsPerPlugin2);
+				synchronized (JobCollector.MAP_LOCK) {
+					JobsPerPlugin jobsPerPlugin = mapJobsPerPlugin.get( plugin );
+					if ( jobsPerPlugin == null ) {
+						JobsPerPlugin jobsPerPlugin2 = new JobsPerPlugin( plugin );
+						mapJobsPerPlugin.put( plugin, jobsPerPlugin2 );
+					}
 				}
-			}		
+			}
 		}
 	}
 
@@ -40,13 +41,15 @@ public abstract class JobAnalyzer{
 
 	protected void 	addItem(Job item, Map<PluginWrapper, JobsPerPlugin> mapJobsPerPlugin, PluginWrapper usedPlugin) {
 		if (usedPlugin != null) {
-			JobsPerPlugin jobsPerPlugin = mapJobsPerPlugin.get(usedPlugin);
-			if (jobsPerPlugin != null) {
-				jobsPerPlugin.addProject(item);
-			} else {
-				JobsPerPlugin jobsPerPlugin2 = new JobsPerPlugin(usedPlugin);
-				jobsPerPlugin2.addProject(item);
-				mapJobsPerPlugin.put(usedPlugin, jobsPerPlugin2);
+			synchronized (JobCollector.MAP_LOCK) {
+				JobsPerPlugin jobsPerPlugin = mapJobsPerPlugin.get( usedPlugin );
+				if ( jobsPerPlugin != null ) {
+					jobsPerPlugin.addProject( item );
+				} else {
+					JobsPerPlugin jobsPerPlugin2 = new JobsPerPlugin( usedPlugin );
+					jobsPerPlugin2.addProject( item );
+					mapJobsPerPlugin.put( usedPlugin, jobsPerPlugin2 );
+				}
 			}
 		}
 	}

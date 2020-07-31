@@ -5,9 +5,15 @@ import hudson.PluginWrapper;
 import hudson.model.AbstractProject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.model.Job;
@@ -16,7 +22,7 @@ import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.pluginusage.JobsPerPlugin;
 
 public class JobCollector {
-	
+	public static final Object MAP_LOCK = new Object();
 	private static final Logger LOGGER = Logger.getLogger(JobCollector.class.getName());
 	private ArrayList<JobAnalyzer> analysers = new ArrayList<>();
 	
@@ -33,7 +39,9 @@ public class JobCollector {
 
 	public Map<PluginWrapper, JobsPerPlugin> getJobsPerPlugin()
 	{
-		Map<PluginWrapper, JobsPerPlugin> mapJobsPerPlugin = new HashMap<>();
+		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 10);
+
+		final Map<PluginWrapper, JobsPerPlugin> mapJobsPerPlugin = new HashMap<>();
 
 		// bootstrap map with all job related plugins
 		for(JobAnalyzer analyser: analysers)
@@ -42,18 +50,39 @@ public class JobCollector {
 		}
 
 		List<Job> allItems = Jenkins.get().getAllItems(Job.class);
-		for(Job item: allItems)
+		Collection<Future> futures = new ArrayList<Future>();
+
+		for(final Job item: allItems)
 		{
-			for(JobAnalyzer analyser: analysers)
-			{
-				try{
-					analyser.doJobAnalyze(item, mapJobsPerPlugin);
-				} catch(Exception e){
-					LOGGER.warning("Exception catched: " + e );
+			futures.add( executor.submit( new Runnable() {
+				@Override
+				public void run() {
+					analyzeItem( item, mapJobsPerPlugin );
 				}
+			} ) );
+		}
+
+		for (Future future : futures) {
+			try {
+				future.get();
+			} catch ( InterruptedException | ExecutionException e ) {
+				LOGGER.log( Level.INFO, "Plugin Usage Analysis did not complete", e );
 			}
 		}
+		executor.shutdown();
+
 		return mapJobsPerPlugin;
+	}
+
+	private void analyzeItem(Job item, Map<PluginWrapper, JobsPerPlugin> mapJobsPerPlugin) {
+		for(JobAnalyzer analyser: analysers)
+		{
+			try{
+				analyser.doJobAnalyze(item, mapJobsPerPlugin);
+			} catch(Exception e){
+				LOGGER.warning("Exception catched: " + e );
+			}
+		}
 	}
 	
 	public int getNumberOfJobs() {

@@ -16,16 +16,7 @@ public class MavenJobAnalyzer  extends JobAnalyzer {
         if (Jenkins.get().getPlugin("maven-plugin") != null){
             if (item instanceof MavenModuleSet) {
                 PluginWrapper usedPlugin = getUsedPlugin(MavenModuleSet.DescriptorImpl.class);
-                if (usedPlugin != null) {
-                    JobsPerPlugin jobsPerPlugin = mapJobsPerPlugin.get(usedPlugin);
-                    if (jobsPerPlugin != null) {
-                        jobsPerPlugin.addProject(item);
-                    } else {
-                        JobsPerPlugin jobsPerPlugin2 = new JobsPerPlugin(usedPlugin);
-                        jobsPerPlugin2.addProject(item);
-                        mapJobsPerPlugin.put(usedPlugin, jobsPerPlugin2);
-                    }
-                }
+                addItem(item, mapJobsPerPlugin, usedPlugin);
             }
         }
     }
