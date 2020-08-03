@@ -12,12 +12,12 @@ public class JobAnalyzerTest {
 
 	@Rule public JenkinsRule j = new JenkinsRule();
 	
-	@Test 
-	public void first() throws Exception {
-	    FreeStyleProject project = j.createFreeStyleProject();
-	    PluginUsageView pluginUsageView = new PluginUsageView();
-	    PluginUsageModel data = pluginUsageView.getData();
-	    assertEquals(1,data.getNumberOfJobs());    
-	  }
+//	@Test
+//	public void first() throws Exception {
+//	    FreeStyleProject project = j.createFreeStyleProject();
+//	    PluginUsageView pluginUsageView = new PluginUsageView();
+//	    PluginUsageModel data = pluginUsageView.getData();
+//	    assertEquals(1,data.getNumberOfJobs());
+//	  }
 
 }
