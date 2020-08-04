@@ -8,9 +8,12 @@ import org.jenkinsci.plugins.pluginusage.JobsPerPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 
 public abstract class JobAnalyzer{
+
+	private static final java.util.logging.Logger LOGGER = Logger.getLogger(JobCollector.class.getName());
 
 	protected List<PluginWrapper> plugins = new ArrayList<>();
 
@@ -25,11 +28,16 @@ public abstract class JobAnalyzer{
 			if(plugin!=null)
 			{
 				synchronized (JobCollector.MAP_LOCK) {
+					long startTime = System.currentTimeMillis();
 					JobsPerPlugin jobsPerPlugin = mapJobsPerPlugin.get( plugin );
 					if ( jobsPerPlugin == null ) {
 						JobsPerPlugin jobsPerPlugin2 = new JobsPerPlugin( plugin );
 						mapJobsPerPlugin.put( plugin, jobsPerPlugin2 );
 					}
+					long endTime = System.currentTimeMillis();
+					long analyzeTime = endTime - startTime;
+					String message = "[JOB_ANALYZER] plugin: " + plugin.getShortName() + " time: " + analyzeTime + "ms";
+					LOGGER.warning(message);
 				}
 			}
 		}
