@@ -27,13 +27,11 @@ public class PluginUsageView implements RootAction {
     }
 
     public String getIconFileName() {
-        return "plugin.png";
-//        return (Jenkins.get().hasPermission(VIEW)) ? "plugin.png" : null;
+        return (Jenkins.get().hasPermission(VIEW)) ? "plugin.png" : null;
     }
 
     public String getUrlName() {
-        return "pluginusage";
-//        return (Jenkins.get().hasPermission(VIEW)) ? "pluginusage" : null;
+        return (Jenkins.get().hasPermission(VIEW)) ? "pluginusage" : null;
     }
 
     public PluginUsageModel getData() {
